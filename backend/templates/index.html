@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EdgeGenAI Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-grad-1: #0B0F19;
+            --bg-grad-2: #1A1025;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --primary: #00F0FF;
+            --primary-glow: rgba(0, 240, 255, 0.4);
+            --secondary: #7000FF;
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --user-msg: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%);
+            --bot-msg: rgba(30, 41, 59, 0.7);
+            --sidebar-width: 280px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-grad-1) 0%, var(--bg-grad-2) 100%);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+
+
+        /* Background Effects */
+        .bg-glow-1 {
+            position: absolute;
+            top: -10%;
+            left: -10%;
+            width: 50vw;
+            height: 50vw;
+            background: radial-gradient(circle, rgba(112, 0, 255, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+            z-index: 0;
+        }
+
+        .bg-glow-2 {
+            position: absolute;
+            bottom: -10%;
+            right: -10%;
+            width: 50vw;
+            height: 50vw;
+            background: radial-gradient(circle, rgba(0, 240, 255, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
+            z-index: 0;
+        }
+
+        /* -------------------------------------
+           LOGIN OVERLAY
+           ------------------------------------- */
+        #login-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(11, 15, 25, 0.8);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.05), transparent);
+            transform: skewX(-20deg);
+            animation: shine 6s infinite;
+        }
+
+        @keyframes shine {
+            0% {
+                left: -100%;
+            }
+
+            20% {
+                left: 200%;
+            }
+
+            100% {
+                left: 200%;
+            }
+        }
+
+        .login-logo {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(to right, #00F0FF, #7000FF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .login-subtitle {
+            color: var(--text-muted);
+            font-size: 15px;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-bottom: 8px;
+            font-weight: 500;
+            padding-left: 4px;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: white;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s ease;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .login-input:focus {
+            border-color: rgba(0, 240, 255, 0.5);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.1);
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary) 0%, #0099FF 100%);
+            color: #0F172A;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px var(--primary-glow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 150%;
+            height: 150%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.4) 0%, transparent 60%);
+            filter: blur(10px);
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.5);
+            transition: opacity 0.3s, transform 0.8s ease-out;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .login-btn:hover::after {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1.2);
+            animation: btnSmoke 2s infinite alternate;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--primary-glow);
+        }
+
+        .login-btn:active {
+            transform: translateY(1px) scale(0.98);
+        }
+
+        @keyframes btnSmoke {
+            0% {
+                filter: blur(10px);
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+
+            100% {
+                filter: blur(15px);
+                transform: translate(-50%, -55%) scale(1.4);
+            }
+        }
+
+        /* -------------------------------------
+           MAIN APP CONTAINER
+           ------------------------------------- */
+        .app-container {
+            width: 100%;
+            max-width: 1400px;
+            height: 100vh;
+            display: flex;
+            position: relative;
+            z-index: 1;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-left: 1px solid var(--glass-border);
+            border-right: 1px solid var(--glass-border);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            transform: scale(0.98);
+            pointer-events: none;
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .app-container.active {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: all;
+        }
+
+        @media (min-width: 768px) {
+            .app-container {
+                height: 92vh;
+                border-radius: 24px;
+                border: 1px solid var(--glass-border);
+            }
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: rgba(0, 0, 0, 0.2);
+            border-right: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: absolute;
+                left: -100%;
+                height: 100%;
+                z-index: 50;
+                transition: left 0.3s ease;
+                background: rgba(11, 15, 25, 0.95);
+                backdrop-filter: blur(20px);
+            }
+
+            .sidebar.mobile-open {
+                left: 0;
+            }
+        }
+
+        .new-chat-btn {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+        }
+
+        .new-chat-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .new-chat-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar-section {
+            margin-bottom: 24px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-section-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            font-weight: 600;
+            padding-left: 8px;
+        }
+
+        .nav-list {
+            list-style: none;
+        }
+
+        .nav-item {
+            padding: 10px 12px;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            color: #CBD5E1;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item svg {
+            width: 16px;
+            height: 16px;
+            opacity: 0.7;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .nav-item.active {
+            background: rgba(0, 240, 255, 0.1);
+            color: var(--primary);
+        }
+
+        .nav-item.active svg {
+            opacity: 1;
+            stroke: var(--primary);
+        }
+
+        .history-list {
+            overflow-y: auto;
+            flex: 1;
+            margin-bottom: 20px;
+        }
+
+        .history-item {
+            padding: 10px 12px;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: all 0.2s ease;
+        }
+
+        .history-item:hover,
+        .history-item.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            border-top: 1px solid var(--glass-border);
+            padding-top: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            border-radius: 12px;
+            padding: 12px;
+            transition: background 0.2s ease;
+        }
+
+        .sidebar-footer:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #7000FF, #00F0FF);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 14px;
+            color: white;
+        }
+
+        .user-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* MAIN CHAT AREA */
+        .main-chat {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        header {
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--glass-border);
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(to right, #00F0FF, #7000FF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #10B981;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #10B981;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #10B981;
+            animation: pulse-dot 2s infinite;
+        }
+
+        #chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            scroll-behavior: smooth;
+        }
+
+        .message-wrapper {
+            display: flex;
+            width: 100%;
+        }
+
+        .message-wrapper.user {
+            justify-content: flex-end;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 16px 20px;
+            border-radius: 20px;
+            line-height: 1.6;
+            font-size: 15px;
+            word-wrap: break-word;
+            position: relative;
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .user .message {
+            background: var(--user-msg);
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 10px 20px rgba(0, 114, 255, 0.2);
+            color: white;
+        }
+
+        .bot .message {
+            background: var(--bot-msg);
+            border: 1px solid var(--glass-border);
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            color: var(--text-main);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bot .message::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 50% 50%, rgba(0, 240, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 30% 70%, rgba(112, 0, 255, 0.08) 0%, transparent 50%);
+            filter: blur(15px);
+            animation: mistDrift 8s infinite linear;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .bot-content * {
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes mistDrift {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes slideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* INPUT AREA */
+        .input-container-wrapper {
+            padding: 20px 30px;
+            background: rgba(0, 0, 0, 0.1);
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .input-box {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 8px 8px 8px 20px;
+            transition: all 0.3s ease;
+        }
+
+        .input-box:focus-within {
+            border-color: rgba(0, 240, 255, 0.4);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.1);
+        }
+
+        textarea {
+            flex: 1;
+            min-height: 24px;
+            max-height: 150px;
+            resize: none;
+            overflow-y: auto;
+            border: none;
+            outline: none;
+            background: transparent;
+            color: var(--text-main);
+            font-size: 15px;
+            line-height: 1.5;
+            padding: 12px 0;
+            margin-bottom: 2px;
+        }
+
+        textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+        .send-btn {
+            width: 48px;
+            height: 48px;
+            border: none;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--primary) 0%, #0099FF 100%);
+            color: #0F172A;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px var(--primary-glow);
+            flex-shrink: 0;
+            padding: 0;
+        }
+
+        .send-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            margin-left: -2px;
+            transition: transform 0.2s;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--primary-glow);
+        }
+
+        .send-btn:hover svg {
+            transform: translateX(2px) translateY(-2px);
+        }
+
+        .send-btn:active {
+            transform: translateY(1px) scale(0.95);
+        }
+
+        .loading {
+            display: flex;
+            gap: 6px;
+            padding: 8px 4px;
+            align-items: center;
+        }
+
+        .loading .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--primary);
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .loading .dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .loading .dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+                opacity: 0.5;
+            }
+
+            40% {
+                transform: scale(1);
+                opacity: 1;
+                box-shadow: 0 0 8px var(--primary-glow);
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .bot-content p {
+            margin-bottom: 12px;
+        }
+
+        .bot-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .bot-content code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+            color: #00F0FF;
+        }
+
+        /* SMOKE CANVAS */
+        #smoke-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="smoke-canvas"></canvas>
+    <div class="bg-glow-1"></div>
+    <div class="bg-glow-2"></div>
+
+    <!-- LOGIN OVERLAY -->
+    <div id="login-overlay">
+        <div class="login-card">
+            <div class="login-logo">EdgeGenAI</div>
+            <div class="login-subtitle">Sign in to your local assistant</div>
+
+            <form id="login-form">
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <input type="email" class="login-input" placeholder="user@example.com" value="user@example.com"
+                        required>
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" class="login-input" placeholder="••••••••" value="password" required>
+                </div>
+                <button type="submit" class="login-btn">Continue to App</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="app-container" id="app-container">
+
+        <aside class="sidebar" id="sidebar">
+            <button class="new-chat-btn" id="new-chat-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                New Chat
+            </button>
+
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Modes</div>
+                <ul class="nav-list">
+                    <li class="nav-item active">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        Chat
+                    </li>
+                    <li class="nav-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="16 18 22 12 16 6"></polyline>
+                            <polyline points="8 6 2 12 8 18"></polyline>
+                        </svg>
+                        Codx
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section history-list" id="history-list">
+                <div class="sidebar-section-title">Recent History</div>
+                <!-- Dynamic history items go here -->
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="user-avatar">M</div>
+                <div class="user-name">Manoj Kumar</div>
+            </div>
+        </aside>
+
+        <main class="main-chat">
+            <header>
+                <div class="header-left">
+                    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24"
+                            height="24">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                    <div class="header-title">EdgeGenAI</div>
+                </div>
+                <div class="status-badge">
+                    <div class="status-dot"></div>
+                    Connected
+                </div>
+            </header>
+            <div id="chat-container">
+                <div class="message-wrapper bot">
+                    <div class="message bot-content">
+                        <p>Hello 👋</p>
+                        <p>I am your advanced local Edge AI assistant.</p>
+                        <p>How can I help you today?</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-container-wrapper">
+                <div class="input-box">
+                    <textarea id="input" placeholder="Message EdgeGenAI..." rows="1"></textarea>
+                    <button class="send-btn" onclick="sendMessage()" aria-label="Send Message" type="button">
+                        <svg viewBox="0 0 24 24">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // LOGIN LOGIC
+        const loginForm = document.getElementById("login-form");
+        const loginOverlay = document.getElementById("login-overlay");
+        const appContainer = document.getElementById("app-container");
+        const sidebar = document.getElementById("sidebar");
+        const userAvatar = document.querySelector(".user-avatar");
+        const userName = document.querySelector(".user-name");
+
+        // Try to load user from localStorage
+        const savedEmail = localStorage.getItem("edgeGenAiUser");
+        if (savedEmail) {
+            userName.textContent = savedEmail;
+            userAvatar.textContent = savedEmail.charAt(0).toUpperCase();
+            loginForm.querySelector("input[type='email']").value = savedEmail;
+        }
+
+        loginForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+
+            const emailInput = loginForm.querySelector("input[type='email']").value;
+            if (emailInput) {
+                userName.textContent = emailInput;
+                userAvatar.textContent = emailInput.charAt(0).toUpperCase();
+                localStorage.setItem("edgeGenAiUser", emailInput);
+            }
+
+            const btn = loginForm.querySelector(".login-btn");
+            btn.innerHTML = "Authenticating...";
+            btn.style.opacity = "0.8";
+
+            setTimeout(() => {
+                loginOverlay.style.opacity = "0";
+                loginOverlay.style.transform = "scale(1.05)";
+                loginOverlay.style.pointerEvents = "none";
+
+                appContainer.classList.add("active");
+
+                setTimeout(() => {
+                    loginOverlay.remove();
+                    document.getElementById("input").focus();
+                }, 600);
+            }, 800);
+        });
+
+        // SIDEBAR TOGGLE
+        function toggleSidebar() { sidebar.classList.toggle("mobile-open"); }
+        document.addEventListener("click", (e) => {
+            if (window.innerWidth <= 768 && sidebar.classList.contains("mobile-open") && !sidebar.contains(e.target) && !e.target.closest(".mobile-menu-btn")) {
+                sidebar.classList.remove("mobile-open");
+            }
+        });
+
+        // MODES
+        const navItems = document.querySelectorAll(".nav-item");
+        navItems.forEach(item => {
+            item.addEventListener("click", () => {
+                navItems.forEach(n => n.classList.remove("active"));
+                item.classList.add("active");
+                if (window.innerWidth <= 768) sidebar.classList.remove("mobile-open");
+            });
+        });
+
+        // CHAT LOGIC
+        const chat = document.getElementById("chat-container");
+        const input = document.getElementById("input");
+
+        input.addEventListener("input", function () {
+            this.style.height = "24px";
+            this.style.height = Math.min(this.scrollHeight, 150) + "px";
+        });
+
+        function formatText(text) {
+            let formatted = text.replace(/\n/g, "<br>");
+            formatted = formatted.replace(/`([^`]+)`/g, '<code>$1</code>');
+            return formatted;
+        }
+
+        // --- STATE MANAGEMENT ---
+        let chatHistoryData = JSON.parse(localStorage.getItem('edgeGenAiHistory')) || [];
+        let currentChatId = Date.now().toString();
+        let isNewChat = true;
+
+        window.addEventListener("DOMContentLoaded", () => {
+            // Render history from localStorage on load
+            chatHistoryData.forEach(c => addToHistoryDOM(c.title, c.id));
+            if (chatHistoryData.length > 0) {
+                // If there are existing chats, load the most recent one
+                loadChat(chatHistoryData[chatHistoryData.length - 1].id);
+            }
+        });
+
+        function saveHistory() {
+            localStorage.setItem('edgeGenAiHistory', JSON.stringify(chatHistoryData));
+        }
+
+        function addMessage(text, type, saveToHistory = true) {
+            const wrapper = document.createElement("div");
+            wrapper.className = `message-wrapper ${type}`;
+
+            const div = document.createElement("div");
+            div.className = `message ${type === 'bot' ? 'bot-content' : ''}`;
+
+            if (type === 'bot') div.innerHTML = formatText(text);
+            else div.textContent = text;
+
+            wrapper.appendChild(div);
+            chat.appendChild(wrapper);
+            scrollBottom();
+
+            if (saveToHistory) {
+                let currentChat = chatHistoryData.find(c => c.id === currentChatId);
+                if (!currentChat) {
+                    currentChat = { id: currentChatId, title: text, messages: [] };
+                    chatHistoryData.push(currentChat);
+                }
+                currentChat.messages.push({ text, type });
+                saveHistory();
+            }
+        }
+
+        function loadingAnimation() {
+            const wrapper = document.createElement("div");
+            wrapper.className = "message-wrapper bot";
+            wrapper.id = "loading";
+
+            const div = document.createElement("div");
+            div.className = "message bot-content";
+            div.innerHTML = `<div class="loading"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+            wrapper.appendChild(div);
+            chat.appendChild(wrapper);
+            scrollBottom();
+        }
+
+        function scrollBottom() { chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' }); }
+
+        const API_URL = window.location.protocol === "file:" ? "http://10.0.2.2:5000/chat" : "/chat";
+
+        async function sendMessage() {
+            const text = input.value.trim();
+
+            if (!text) return;
+
+            if (isNewChat) {
+                addToHistoryDOM(text, currentChatId);
+                isNewChat = false;
+            }
+
+            addMessage(text, "user");
+
+            input.value = "";
+            input.style.height = "24px";
+            input.focus();
+
+            loadingAnimation();
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-App-Secret": "manoj_edgegenai_12345"
+                    },
+                    body: JSON.stringify({
+                        query: text
+                    })
+                });
+
+                const data = await response.json();
+
+                const loading = document.getElementById("loading");
+                if (loading) loading.remove();
+
+                addMessage(data.response || "No response received.", "bot");
+
+            } catch (error) {
+                const loading = document.getElementById("loading");
+                if (loading) loading.remove();
+
+                addMessage("❌ Connection failed with backend.", "bot", false);
+                console.log(error);
+            }
+        }
+
+        input.addEventListener("keydown", function (e) {
+            if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+        });
+
+        // NEW CHAT BUTTON
+        document.getElementById("new-chat-btn").addEventListener("click", () => {
+            isNewChat = true;
+            currentChatId = Date.now().toString();
+            chat.innerHTML = `
+                <div class="message-wrapper bot">
+                    <div class="message bot-content">
+                        <p>Hello 👋</p>
+                        <p>I am your advanced local Edge AI assistant.</p>
+                        <p>How can I help you today?</p>
+                    </div>
+                </div>
+            `;
+            // Remove active highlight from history items
+            document.querySelectorAll(".history-item").forEach(i => i.classList.remove("active"));
+            if (window.innerWidth <= 768) sidebar.classList.remove("mobile-open");
+        });
+
+        function addToHistoryDOM(text, id) {
+            const historyList = document.getElementById("history-list");
+            const title = historyList.querySelector(".sidebar-section-title");
+
+            const item = document.createElement("div");
+            item.className = "history-item";
+            item.textContent = text;
+            item.setAttribute("data-id", id);
+
+            item.addEventListener("click", () => loadChat(id));
+
+            // Prepend just after the title
+            title.insertAdjacentElement("afterend", item);
+        }
+
+        function loadChat(id) {
+            isNewChat = false;
+            currentChatId = id;
+            chat.innerHTML = "";
+
+            // Highlight selected history item
+            document.querySelectorAll(".history-item").forEach(i => {
+                i.classList.toggle("active", i.getAttribute("data-id") === id);
+            });
+
+            const selectedChat = chatHistoryData.find(c => c.id === id);
+            if (selectedChat) {
+                selectedChat.messages.forEach(msg => addMessage(msg.text, msg.type, false));
+            }
+            if (window.innerWidth <= 768) sidebar.classList.remove("mobile-open");
+        }
+
+        // SMOKE EFFECT CANVAS
+        const smokeCanvas = document.getElementById('smoke-canvas');
+        const ctx = smokeCanvas.getContext('2d');
+        smokeCanvas.width = window.innerWidth;
+        smokeCanvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            smokeCanvas.width = window.innerWidth;
+            smokeCanvas.height = window.innerHeight;
+        });
+
+        const particles = [];
+        let mouseX = window.innerWidth / 2;
+        let mouseY = window.innerHeight / 2;
+        let isMouseMoving = false;
+        let mouseTimeout;
+
+        window.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            isMouseMoving = true;
+            clearTimeout(mouseTimeout);
+            mouseTimeout = setTimeout(() => isMouseMoving = false, 100);
+
+            // Spawn particles on cursor
+            for (let i = 0; i < 2; i++) {
+                particles.push(new SmokeParticle(mouseX, mouseY));
+            }
+        });
+
+        class SmokeParticle {
+            constructor(x, y) {
+                this.isAmbient = (x === undefined);
+                this.x = x !== undefined ? x + (Math.random() * 40 - 20) : Math.random() * smokeCanvas.width;
+                this.y = y !== undefined ? y + (Math.random() * 40 - 20) : smokeCanvas.height + Math.random() * 200;
+                this.size = Math.random() * 100 + 60;
+                this.speedX = Math.random() * 2 - 1;
+                this.speedY = Math.random() * -1.5 - 0.5;
+                const isCyan = Math.random() > 0.5;
+                this.r = isCyan ? 0 : 112;
+                this.g = isCyan ? 240 : 0;
+                this.b = isCyan ? 255 : 255;
+                this.maxOpacity = Math.random() * 0.05 + 0.02;
+                this.life = 1;
+                this.decay = this.isAmbient ? (Math.random() * 0.002 + 0.001) : (Math.random() * 0.015 + 0.01);
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.size += 0.5;
+                this.life -= this.decay;
+
+                if (this.isAmbient && (this.y + this.size < 0 || this.life <= 0)) {
+                    this.y = smokeCanvas.height + this.size;
+                    this.x = Math.random() * smokeCanvas.width;
+                    this.life = 1;
+                }
+            }
+            draw() {
+                if (this.life <= 0) return;
+                const opacity = this.maxOpacity * this.life;
+                const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
+                gradient.addColorStop(0, `rgba(${this.r}, ${this.g}, ${this.b}, ${opacity})`);
+                gradient.addColorStop(1, `rgba(${this.r}, ${this.g}, ${this.b}, 0)`);
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Initialize ambient particles
+        for (let i = 0; i < 30; i++) {
+            particles.push(new SmokeParticle());
+        }
+
+        function animateSmoke() {
+            ctx.clearRect(0, 0, smokeCanvas.width, smokeCanvas.height);
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.update();
+                if (!p.isAmbient && p.life <= 0) {
+                    particles.splice(i, 1);
+                } else {
+                    p.draw();
+                }
+            }
+            requestAnimationFrame(animateSmoke);
+        }
+        animateSmoke();
+
+        let chatHistory = JSON.parse(localStorage.getItem("edgegenai_history")) || [];
+
+        function saveChatMessage(role, message) {
+            chatHistory.push({
+                role: role,
+                message: message,
+                time: new Date().toLocaleString()
+            });
+
+            localStorage.setItem("edgegenai_history", JSON.stringify(chatHistory));
+        }
+
+        function newChat() {
+            chat.innerHTML = `
+        <div class="message bot">
+            Hello 👋<br><br>
+            New chat started.<br>
+            Ask me anything.
+        </div>
+    `;
+        }
+
+        function showHistory() {
+            chat.innerHTML = "";
+
+            if (chatHistory.length === 0) {
+                addMessage("No chat history found.", "bot");
+                return;
+            }
+
+            chatHistory.forEach(item => {
+                addMessage(
+                    `<b>${item.role}</b><br>${item.message}<br><small>${item.time}</small>`,
+                    item.role === "user" ? "user" : "bot"
+                );
+            });
+        }
+
+        function showAccount() {
+            chat.innerHTML = "";
+
+            addMessage(`
+        👤 <b>Account Information</b><br><br>
+        Name: Manoj<br>
+        App: EdgeGenAI<br>
+        Mode: Web + Android AI Assistant<br>
+        Status: Logged in
+    `, "bot");
+        }
+
+        function showLogin() {
+            chat.innerHTML = "";
+
+            addMessage(`
+        🔐 <b>Login Page</b><br><br>
+        <input id="loginName" placeholder="Enter name" style="padding:12px;border-radius:10px;width:90%;margin:8px 0;"><br>
+        <input id="loginEmail" placeholder="Enter email" style="padding:12px;border-radius:10px;width:90%;margin:8px 0;"><br>
+        <button onclick="loginUser()" style="width:90%;margin-top:10px;">Login</button>
+    `, "bot");
+        }
+
+        function loginUser() {
+            const name = document.getElementById("loginName").value;
+            const email = document.getElementById("loginEmail").value;
+
+            localStorage.setItem("edgegenai_user", JSON.stringify({
+                name: name,
+                email: email
+            }));
+
+            chat.innerHTML = "";
+            addMessage("✅ Login successful<br>Name: " + name + "<br>Email: " + email, "bot");
+        }
+    </script>
+
+</body>
+
+</html>
