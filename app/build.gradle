@@ -1,0 +1,53 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.manoj.edgegenai'
+    compileSdk 34
+
+ defaultConfig {
+    applicationId "com.manoj.edgegenai"
+    minSdk 24
+    targetSdk 34
+    versionCode 1
+    versionName "1.0"
+
+    testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+    externalNativeBuild {
+        cmake {
+            cppFlags "-std=c++17"
+        }
+    }
+}
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "src/main/cpp/CMakeLists.txt"
+        }
+    }
+
+    ndkVersion "27.0.12077973"
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.2'
+
+    
+
+}

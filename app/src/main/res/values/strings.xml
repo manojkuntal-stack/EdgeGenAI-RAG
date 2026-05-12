@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">EdgeGenAI</string>
+    <string name="hint_input">Ask something...</string>
+    <string name="btn_send">Send</string>
+</resources>
