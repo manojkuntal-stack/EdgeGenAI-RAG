@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.pyc
+newenv/
+.venv/
+venv/
+.env
+
+# Android / Gradle
+.gradle/
+build/
+app/build/
+backend/build/
+local.properties
+*.apk
+*.aab
+
+# Android Studio
+.idea/
+*.iml
+
+# Large model files
+*.gguf
+*.onnx
+*.bin
+*.safetensors
+
+# Logs / crash / memory files
+*.log
+*.hprof
+replay_*.log
+hs_err_*.log
+java_pid*.hprof
+
+# OS
+.DS_Store
+Thumbs.db
