@@ -1,0 +1,11 @@
+    buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath "com.android.tools.build:gradle:8.2.2"
+        // Add this for Retrofit & Converter
+        classpath "com.github.dcendents:android-maven-gradle-plugin:2.1"
+    }
+}   
