@@ -1,0 +1,13 @@
+Welcome to EdgeGenAI 🚀
+
+Try these prompts:
+
+1. What is Generative AI?
+2. Explain Retrieval-Augmented Generation (RAG)
+3. How do embeddings work in NLP?
+4. What is cosine similarity?
+5. Explain transformers in simple terms
+6. Generate a short story about AI in villages
+7. What are the applications of edge AI?
+
+This app demonstrates a lightweight Generative AI system using TensorFlow Lite models with RAG + embeddings + language modeling concepts.
